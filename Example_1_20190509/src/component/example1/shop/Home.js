@@ -18,9 +18,9 @@ import {
   Dimensions,
   SafeAreaView
 } from "react-native";
-import Header from "../../module/ui/Header";
-import colors from "../../res/colors";
-import images from "../../res/drawable/images";
+import Header from "../../../module/ui/Header";
+import colors from "../../../res/colors";
+import images from "../../../res/drawable/images";
 
 const ShopAction = {
   None: 0,
