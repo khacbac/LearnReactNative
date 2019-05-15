@@ -36,11 +36,17 @@ const StackContainer = createAppContainer(StackApp);
 export default class StackCom extends Component {
   constructor(props) {
     super(props);
-    SessionStore.setBgColorForApp(colors.colorMain);
+    SessionStore.updateBgColor = this.updateBgColor;
+    SessionStore.bgColor = colors.colorMain;
     this.state = {
-      bgColorApp: SessionStore.getBgColorForApp()
+      bgColorApp: SessionStore.bgColor
     };
   }
+
+  updateBgColor = color => {
+    SessionStore.bgColor = color;
+    this.setState({ bgColorApp: color });
+  };
 
   render() {
     return (

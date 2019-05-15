@@ -86,12 +86,15 @@ export default class ProductScreen extends Component {
     return (
       <HeaderV2
         leftIcon="chevron-left"
-        onLeftIconPress={() => this.props.navigation.goBack()}
+        onLeftIconPress={() => {
+          this.props.navigation.goBack();
+          SessionStore.updateBgColor(colors.colorMain);
+        }}
         rightIcon="shopping-basket"
         title={"Products".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
-          backgroundColor: SessionStore.getBgColorForApp()
+          backgroundColor: SessionStore.bgColor
         }}
       />
     );

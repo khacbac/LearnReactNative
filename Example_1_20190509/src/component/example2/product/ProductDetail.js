@@ -68,7 +68,7 @@ export default class ProductDetail extends Component {
         title={"Product".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
-          backgroundColor: SessionStore.getBgColorForApp()
+          backgroundColor: SessionStore.bgColor
         }}
       />
     );

@@ -78,7 +78,7 @@ export default class CategoryScreen extends React.Component {
         title={"Categories".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
-          backgroundColor: SessionStore.getBgColorForApp()
+          backgroundColor: SessionStore.bgColor
         }}
       />
     );
@@ -132,7 +132,7 @@ export default class CategoryScreen extends React.Component {
   };
 
   gotoProduct(item) {
-    SessionStore.setBgColorForApp(item.bgColor);
+    SessionStore.updateBgColor(item.bgColor);
     this.props.navigation.navigate(ScreenName.Product, { CATEGORY: item });
   }
 
