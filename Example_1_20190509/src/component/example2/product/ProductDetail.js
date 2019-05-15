@@ -14,6 +14,7 @@ import colors from "../../../res/colors";
 import HttpUtils, { Status, BASE_URL } from "../../../module/http/HttpUtils";
 import strings from "../../../res/strings";
 import dimens from "../../../res/dimens";
+import SessionStore from "../../SessionStore";
 
 const { width, height } = Dimensions.get("window");
 export default class ProductDetail extends Component {
@@ -67,7 +68,7 @@ export default class ProductDetail extends Component {
         title={"Product".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
-          backgroundColor: colors.colorGreen40
+          backgroundColor: SessionStore.getBgColorForApp()
         }}
       />
     );
@@ -263,7 +264,7 @@ export default class ProductDetail extends Component {
         {this.state.httpStatus == Status.LOADING && (
           <ActivityIndicator
             size="large"
-            color={colors.colorGreen40}
+            color={colors.colorMain}
             style={styles.indicator}
           />
         )}

@@ -17,6 +17,7 @@ import images from "../../../res/drawable/images";
 import strings from "../../../res/strings";
 import dimens from "../../../res/dimens";
 import ScreenName from "../../ScreenName";
+import SessionStore from "../../SessionStore";
 
 const productImages = [
   images.apple,
@@ -32,8 +33,11 @@ const prices = [0.99, 0.9, 1.5, 1.22, 0.91, 2.2, 1.24];
 const { width, height } = Dimensions.get("window");
 
 export default class ProductScreen extends Component {
+  category = null;
+
   constructor(props) {
     super(props);
+    this.category = this.props.navigation.getParam("CATEGORY");
     this.state = {
       products: [],
       // status fecth data.
@@ -43,10 +47,10 @@ export default class ProductScreen extends Component {
 
   async componentDidMount() {
     // get param from previous screen.
-    let category = this.props.navigation.getParam("CATEGORY");
+    // let category = this.props.navigation.getParam("CATEGORY");
     try {
       // get all product from server.
-      let prs = await HttpUtils.requestGet(category.category_url);
+      let prs = await HttpUtils.requestGet(this.category.category_url);
       if (prs && prs.products) {
         prs.products.forEach(item => {
           item.product_photo =
@@ -87,7 +91,7 @@ export default class ProductScreen extends Component {
         title={"Products".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
-          backgroundColor: colors.colorGreen40
+          backgroundColor: SessionStore.getBgColorForApp()
         }}
       />
     );
@@ -111,7 +115,7 @@ export default class ProductScreen extends Component {
         {this.state.httpStatus == Status.LOADING && (
           <ActivityIndicator
             size="large"
-            color={colors.colorGreen40}
+            color={colors.colorMain}
             style={styles.indicator}
           />
         )}
@@ -162,7 +166,8 @@ export default class ProductScreen extends Component {
 
   gotoProductDetail(item) {
     this.props.navigation.navigate(ScreenName.Product_Detail, {
-      PRODUCT: item
+      PRODUCT: item,
+      BG_COLOR: this.category.bgColor
     });
   }
 
