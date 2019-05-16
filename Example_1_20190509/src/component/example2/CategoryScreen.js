@@ -49,6 +49,9 @@ export default class CategoryScreen extends React.Component {
           item.bgColor = colorBgs[Math.floor(Math.random() * colorBgs.length)];
           categoryList.push(item);
         });
+        categoryList = categoryList.filter(item => {
+          return item.name;
+        });
         this.setState({ categoryList, httpStatus: Status.SUCCESS });
       } else {
         this.onFetchError();
@@ -97,7 +100,7 @@ export default class CategoryScreen extends React.Component {
         <FlatList
           data={this.state.categoryList}
           renderItem={this._renderItem}
-          keyExtractor={(item, index) => item.name.toString()}
+          keyExtractor={(item, index) => item.name}
         />
         {this.state.httpStatus == Status.LOADING && (
           <ActivityIndicator

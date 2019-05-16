@@ -9,6 +9,7 @@ import ProductDetail from "./example2/product/ProductDetail";
 import colors from "../res/colors";
 import GeneralStatusBarColor from "../module/ui/GeneralStatusBarColorStyles";
 import SessionStore from "./SessionStore";
+import Utils from "../module/utils/Utils";
 
 const StackApp = createStackNavigator(
   {
@@ -41,6 +42,8 @@ export default class StackCom extends Component {
     this.state = {
       bgColorApp: SessionStore.bgColor
     };
+
+    console.log("BACHK_IS_PHONEX: ", Utils.isIphoneX());
   }
 
   updateBgColor = color => {
@@ -50,7 +53,12 @@ export default class StackCom extends Component {
 
   render() {
     return (
-      <View style={{ flex: 1, backgroundColor: this.state.bgColorApp }}>
+      <View
+        style={{
+          flex: 1
+          //  backgroundColor: this.state.bgColorApp
+        }}
+      >
         <GeneralStatusBarColor
           backgroundColor={this.state.bgColorApp}
           barStyle="light-content"
