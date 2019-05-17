@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  AsyncStorage,
   ActivityIndicator
 } from "react-native";
 import HeaderV2 from "../../../module/ui/HeaderV2";
@@ -15,6 +16,8 @@ import HttpUtils, { Status, BASE_URL } from "../../../module/http/HttpUtils";
 import strings from "../../../res/strings";
 import dimens from "../../../res/dimens";
 import SessionStore from "../../SessionStore";
+import HeaderCart from "../../../module/ui/HeaderCart";
+import StoreKey from "../../StoreKey";
 
 const { width, height } = Dimensions.get("window");
 export default class ProductDetail extends Component {
@@ -24,7 +27,8 @@ export default class ProductDetail extends Component {
       // status fecth data.
       httpStatus: Status.LOADING,
       productDetail: null,
-      productNum: 1
+      productNum: 1,
+      cartNum: SessionStore.cartNum
     };
   }
 
@@ -61,7 +65,7 @@ export default class ProductDetail extends Component {
    */
   _renderHeader = () => {
     return (
-      <HeaderV2
+      <HeaderCart
         leftIcon="chevron-left"
         onLeftIconPress={() => this.props.navigation.goBack()}
         rightIcon="shopping-basket"
@@ -70,6 +74,7 @@ export default class ProductDetail extends Component {
         rootStyle={{
           backgroundColor: SessionStore.bgColor
         }}
+        cartNum={this.state.cartNum}
       />
     );
   };
@@ -232,6 +237,26 @@ export default class ProductDetail extends Component {
     return (
       <View style={styles.bottom_action_container}>
         <TouchableOpacity
+          onPress={() => this._addToCart()}
+          activeOpacity={1}
+          style={[
+            styles.bottom_action_btn,
+            {
+              height: bottomHeight,
+              borderRadius: bottomHeight / 2
+            }
+          ]}
+        >
+          <Text
+            style={{
+              color: colors.colorWhite
+            }}
+          >
+            ADD TO CART
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => {
             Alert.alert("", "Not enough money");
           }}
@@ -255,6 +280,21 @@ export default class ProductDetail extends Component {
       </View>
     );
   };
+
+  async _addToCart() {
+    try {
+      SessionStore.cartNum = SessionStore.cartNum + this.state.productNum;
+      await AsyncStorage.setItem(
+        StoreKey.SAVE_CART,
+        JSON.stringify({ cartNum: SessionStore.cartNum })
+      );
+      this.setState({
+        cartNum: SessionStore.cartNum
+      });
+    } catch (error) {
+      Alert.alert("", "Lưu thất bại");
+    }
+  }
 
   render() {
     return (
@@ -323,6 +363,7 @@ const styles = StyleSheet.create({
   bottom_action_container: {
     position: "absolute",
     width: "100%",
+    paddingHorizontal: 10,
     alignItems: "center",
     elevation: dimens._2,
     shadowRadius: dimens._2,
@@ -331,10 +372,13 @@ const styles = StyleSheet.create({
       height: 2
     },
     shadowOpacity: 0.5,
-    bottom: 0
+    bottom: 0,
+    flexDirection: "row",
+    justifyContent: "space-around"
   },
   bottom_action_btn: {
-    width: "80%",
+    width: "40%",
+    // flex: 1,
     backgroundColor: colors.colorSub,
     alignItems: "center",
     justifyContent: "center"

@@ -18,6 +18,7 @@ import strings from "../../../res/strings";
 import dimens from "../../../res/dimens";
 import ScreenName from "../../ScreenName";
 import SessionStore from "../../SessionStore";
+import HeaderCart from "../../../module/ui/HeaderCart";
 
 const productImages = [
   images.apple,
@@ -41,7 +42,8 @@ export default class ProductScreen extends Component {
     this.state = {
       products: [],
       // status fecth data.
-      httpStatus: Status.LOADING
+      httpStatus: Status.LOADING,
+      cartNum: SessionStore.cartNum
     };
   }
 
@@ -84,7 +86,7 @@ export default class ProductScreen extends Component {
    */
   _renderHeader = () => {
     return (
-      <HeaderV2
+      <HeaderCart
         leftIcon="chevron-left"
         onLeftIconPress={() => {
           this.props.navigation.goBack();
@@ -96,6 +98,7 @@ export default class ProductScreen extends Component {
         rootStyle={{
           backgroundColor: SessionStore.bgColor
         }}
+        cartNum={this.state.cartNum}
       />
     );
   };
