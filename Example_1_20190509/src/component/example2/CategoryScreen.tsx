@@ -15,12 +15,14 @@ import {
 } from "react-native";
 import HeaderV2 from "../../module/ui/HeaderV2";
 import colors from "../../res/colors";
-import HttpUtils, { Status } from "../../module/http/HttpUtils";
 import MethodName from "../../module/http/MethodName";
 import ScreenName from "../ScreenName";
 import dimens from "../../res/dimens";
 import images from "../../res/drawable/images";
 import SessionStore from "../SessionStore";
+import Category from "../../module/model/Category";
+import strings from "../../res/strings";
+import HttpUtils, { Status } from "../../module/http/HttpUtils";
 
 const { width, height } = Dimensions.get("window");
 const colorBgs = ["#ff9900", "#ff3333", "#e65c00", "#e6e600", "#cc0066"];
@@ -31,7 +33,16 @@ const categoryImages = [
   images.fruit_background_3
 ];
 
-export default class CategoryScreen extends React.Component {
+interface Props {
+  navigation: any;
+}
+
+interface State {
+  categoryList: Array<Category>;
+  httpStatus: Status;
+}
+
+export default class CategoryScreen extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
@@ -45,9 +56,14 @@ export default class CategoryScreen extends React.Component {
     try {
       let cs = await HttpUtils.requestGet(MethodName.GET_CATEGORIES);
       if (cs && cs.categories) {
+        console.log("BACHK_cs: ", cs);
         cs.categories.forEach(item => {
-          item.bgColor = colorBgs[Math.floor(Math.random() * colorBgs.length)];
-          categoryList.push(item);
+          // item.bgColor = colorBgs[Math.floor(Math.random() * colorBgs.length)];
+          let ct = new Category();
+          ct.bgColor = colorBgs[Math.floor(Math.random() * colorBgs.length)];
+          ct.category_url = item.category_url;
+          ct.name = item.name;
+          categoryList.push(ct);
         });
         categoryList = categoryList.filter(item => {
           return item.name;

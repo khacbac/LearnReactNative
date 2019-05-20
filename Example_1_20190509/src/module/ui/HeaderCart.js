@@ -44,17 +44,19 @@ export default class HeaderCart extends React.Component {
               marginHorizontal: 10
             }}
           >
-            <Text
-              style={{
-                margin: 5
-              }}
-            >
-              <FontAwesome5
-                name={this.props.rightIcon}
-                size={18}
-                color={this.props.txtColor || colors.colorBlackMedium}
-              />
-            </Text>
+            <TouchableOpacity onPress={this.props.onRightIconPress}>
+              <Text
+                style={{
+                  margin: 5
+                }}
+              >
+                <FontAwesome5
+                  name={this.props.rightIcon}
+                  size={18}
+                  color={this.props.txtColor || colors.colorBlackMedium}
+                />
+              </Text>
+            </TouchableOpacity>
 
             {this.props.cartNum > 0 && (
               <View

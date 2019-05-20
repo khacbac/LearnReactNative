@@ -18,26 +18,46 @@ import dimens from "../../../res/dimens";
 import SessionStore from "../../SessionStore";
 import HeaderCart from "../../../module/ui/HeaderCart";
 import StoreKey from "../../StoreKey";
+import Product from "../../../module/model/Product";
+import ProductDetail from "../../../module/model/ProductDetail";
+import ScreenName from "../../ScreenName";
+
+interface Props {
+  navigation: any;
+}
+
+interface State {
+  httpStatus: Status;
+  productDetail: ProductDetail;
+  productNum: number;
+  cartNum: number;
+}
 
 const { width, height } = Dimensions.get("window");
-export default class ProductDetail extends Component {
+export default class ProductDetailScreen extends React.Component<Props, State> {
   constructor(props) {
     super(props);
+    let cartNum = 0;
+    SessionStore.cart.carts.forEach(i => {
+      cartNum += i.count;
+    });
     this.state = {
       // status fecth data.
       httpStatus: Status.LOADING,
       productDetail: null,
       productNum: 1,
-      cartNum: SessionStore.cartNum
+      cartNum: cartNum
     };
   }
 
   async componentDidMount() {
     // get param from previous screen.
-    let product = this.props.navigation.getParam("PRODUCT");
+    let product: Product = this.props.navigation.getParam("PRODUCT");
     try {
       // get all product from server.
-      let prDetail = await HttpUtils.requestGet(product.product_url);
+      let prDetail: ProductDetail = await HttpUtils.requestGet(
+        product.product_url
+      );
       if (prDetail) {
         this.setState({
           productDetail: prDetail,
@@ -69,6 +89,10 @@ export default class ProductDetail extends Component {
         leftIcon="chevron-left"
         onLeftIconPress={() => this.props.navigation.goBack()}
         rightIcon="shopping-basket"
+        onRightIconPress={() => {
+          this.props.navigation.navigate(ScreenName.Cart_Screen);
+          // SessionStore.updateBgColor(colors.colorMain);
+        }}
         title={"Product".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
@@ -283,13 +307,37 @@ export default class ProductDetail extends Component {
 
   async _addToCart() {
     try {
-      SessionStore.cartNum = SessionStore.cartNum + this.state.productNum;
+      // SessionStore.cartNum = SessionStore.cartNum + this.state.productNum;
+      // let product = SessionStore.cart.carts.find(item => {
+      //   return item.product.name == this.state.productDetail.name;
+      // });
+      let isExist = SessionStore.cart.isExist(this.state.productDetail);
+      if (isExist) {
+        SessionStore.cart.carts = SessionStore.cart.carts.map(p => {
+          if (p.product.name == this.state.productDetail.name) {
+            return { ...p, count: p.count + this.state.productNum };
+          }
+          return p;
+        });
+      } else {
+        SessionStore.cart.carts.push({
+          product: this.state.productDetail,
+          count: this.state.productNum
+        });
+      }
+
+      // luu lai vao database.
       await AsyncStorage.setItem(
         StoreKey.SAVE_CART,
-        JSON.stringify({ cartNum: SessionStore.cartNum })
+        JSON.stringify(SessionStore.cart)
       );
+
+      let num = 0;
+      SessionStore.cart.carts.forEach(e => {
+        num += e.count;
+      });
       this.setState({
-        cartNum: SessionStore.cartNum
+        cartNum: num
       });
     } catch (error) {
       Alert.alert("", "Lưu thất bại");

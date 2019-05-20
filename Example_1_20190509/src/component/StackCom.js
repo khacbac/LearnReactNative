@@ -5,11 +5,31 @@ import ScreenName from "./ScreenName";
 import Home from "./example1/shop/Home";
 import CategoryScreen from "./example2/CategoryScreen";
 import ProductScreen from "./example2/product/ProductScreen";
-import ProductDetail from "./example2/product/ProductDetail";
+import ProductDetailScreen from "./example2/product/ProductDetail";
 import colors from "../res/colors";
 import GeneralStatusBarColor from "../module/ui/GeneralStatusBarColorStyles";
 import SessionStore from "./SessionStore";
 import Utils from "../module/utils/Utils";
+import { Provider } from "react-redux";
+import { createStore, combineReducers } from "redux";
+import CartScreen from "./example2/cart/CartScreen";
+
+const defaultState = {
+  count: 0
+};
+
+const reducer = (state = defaultState, action) => {
+  switch (action.type) {
+    default:
+      return state;
+  }
+};
+
+const reducers = combineReducers({
+  appReducer: reducer
+});
+
+const store = createStore(reducers);
 
 const StackApp = createStackNavigator(
   {
@@ -23,7 +43,10 @@ const StackApp = createStackNavigator(
       screen: ProductScreen
     },
     [ScreenName.Product_Detail]: {
-      screen: ProductDetail
+      screen: ProductDetailScreen
+    },
+    [ScreenName.Cart_Screen]: {
+      screen: CartScreen
     }
   },
   (navigationOptions = {
@@ -53,20 +76,22 @@ export default class StackCom extends Component {
 
   render() {
     return (
-      <View
-        style={{
-          flex: 1
-          //  backgroundColor: this.state.bgColorApp
-        }}
-      >
-        <GeneralStatusBarColor
-          backgroundColor={this.state.bgColorApp}
-          barStyle="light-content"
-        />
-        <SafeAreaView style={{ flex: 1 }}>
-          <StackContainer />
-        </SafeAreaView>
-      </View>
+      <Provider store={store}>
+        <View
+          style={{
+            flex: 1
+            //  backgroundColor: this.state.bgColorApp
+          }}
+        >
+          <GeneralStatusBarColor
+            backgroundColor={this.state.bgColorApp}
+            barStyle="light-content"
+          />
+          <SafeAreaView style={{ flex: 1 }}>
+            <StackContainer />
+          </SafeAreaView>
+        </View>
+      </Provider>
     );
   }
 }

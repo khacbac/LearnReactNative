@@ -8,7 +8,8 @@ import {
   Dimensions,
   TouchableOpacity,
   SafeAreaView,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from "react-native";
 import HeaderV2 from "../../../module/ui/HeaderV2";
 import colors from "../../../res/colors";
@@ -19,6 +20,7 @@ import dimens from "../../../res/dimens";
 import ScreenName from "../../ScreenName";
 import SessionStore from "../../SessionStore";
 import HeaderCart from "../../../module/ui/HeaderCart";
+import Product from "../../../module/model/Product";
 
 const productImages = [
   images.apple,
@@ -33,17 +35,33 @@ const prices = [0.99, 0.9, 1.5, 1.22, 0.91, 2.2, 1.24];
 
 const { width, height } = Dimensions.get("window");
 
-export default class ProductScreen extends Component {
+interface Props {
+  navigation: any;
+}
+
+interface State {
+  httpStatus: Status;
+  products: Array<Product>;
+  cartNum: number;
+}
+
+export default class ProductScreen extends React.Component<Props, State> {
   category = null;
 
   constructor(props) {
     super(props);
     this.category = this.props.navigation.getParam("CATEGORY");
+    let cartNum = 0;
+    console.log("BACHK__ProductScreen: ", SessionStore.cart);
+    SessionStore.cart.carts.forEach(i => {
+      cartNum += i.count;
+    });
     this.state = {
       products: [],
       // status fecth data.
       httpStatus: Status.LOADING,
-      cartNum: SessionStore.cartNum
+      // cartNum: SessionStore.cartNum
+      cartNum: cartNum
     };
   }
 
@@ -54,6 +72,7 @@ export default class ProductScreen extends Component {
       // get all product from server.
       let prs = await HttpUtils.requestGet(this.category.category_url);
       if (prs && prs.products) {
+        console.log("BACHK_componentDidMount: ", prs);
         prs.products.forEach(item => {
           item.product_photo =
             productImages[Math.floor(Math.random() * productImages.length)];
@@ -93,6 +112,10 @@ export default class ProductScreen extends Component {
           SessionStore.updateBgColor(colors.colorMain);
         }}
         rightIcon="shopping-basket"
+        onRightIconPress={() => {
+          this.props.navigation.navigate(ScreenName.Cart_Screen);
+          // SessionStore.updateBgColor(colors.colorMain);
+        }}
         title={"Products".toUpperCase()}
         txtColor={colors.colorWhite}
         rootStyle={{
