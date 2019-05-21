@@ -1,5 +1,11 @@
 import React, { Component } from "react";
-import { StyleSheet, View, SafeAreaView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  AsyncStorage,
+  Alert
+} from "react-native";
 import { createStackNavigator, createAppContainer } from "react-navigation";
 import ScreenName from "./ScreenName";
 import Home from "./example1/shop/Home";
@@ -13,20 +19,16 @@ import Utils from "../module/utils/Utils";
 import { Provider } from "react-redux";
 import { createStore, combineReducers } from "redux";
 import CartScreen from "./example2/cart/CartScreen";
+import CartReducer from "./example2/redux/reducers/CartReducer";
+import ReducerConstant from "./example2/redux/reducers/ReducerContant";
+import StoreKey from "./StoreKey";
 
-const defaultState = {
-  count: 0
-};
-
-const reducer = (state = defaultState, action) => {
-  switch (action.type) {
-    default:
-      return state;
-  }
-};
+import strings from "../res/strings";
+import ProductDetail from "../module/model/ProductDetail";
+import { setCart } from "./example2/redux/actions/CartAction";
 
 const reducers = combineReducers({
-  appReducer: reducer
+  [ReducerConstant.CartReducer]: CartReducer,
 });
 
 const store = createStore(reducers);
@@ -49,15 +51,23 @@ const StackApp = createStackNavigator(
       screen: CartScreen
     }
   },
-  (navigationOptions = {
+  {
     headerMode: "none",
     initialRouteName: ScreenName.Categories
-  })
+  }
 );
 
 const StackContainer = createAppContainer(StackApp);
 
-export default class StackCom extends Component {
+interface Props {
+  
+}
+
+interface State {
+  bgColorApp: string;
+}
+
+export default class StackCom extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     SessionStore.updateBgColor = this.updateBgColor;
@@ -66,7 +76,6 @@ export default class StackCom extends Component {
       bgColorApp: SessionStore.bgColor
     };
 
-    console.log("BACHK_IS_PHONEX: ", Utils.isIphoneX());
   }
 
   updateBgColor = color => {

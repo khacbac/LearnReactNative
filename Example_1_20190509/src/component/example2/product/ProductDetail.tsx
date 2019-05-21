@@ -15,15 +15,29 @@ import colors from "../../../res/colors";
 import HttpUtils, { Status, BASE_URL } from "../../../module/http/HttpUtils";
 import strings from "../../../res/strings";
 import dimens from "../../../res/dimens";
-import SessionStore from "../../SessionStore";
+// import SessionStore from "../../SessionStore";
 import HeaderCart from "../../../module/ui/HeaderCart";
 import StoreKey from "../../StoreKey";
 import Product from "../../../module/model/Product";
 import ProductDetail from "../../../module/model/ProductDetail";
 import ScreenName from "../../ScreenName";
+import ReducerConstant from "../redux/reducers/ReducerContant";
+import { connect } from "react-redux";
+import {
+  setCart,
+  updateCart,
+  pushProductToCart
+} from "../redux/actions/CartAction";
+import SessionStore from "../../SessionStore";
+import Cart from "../../../module/model/Cart";
 
 interface Props {
   navigation: any;
+  // cart: Cart;
+  setCart: (carts: Array<Cart>) => void;
+  carts: Array<Cart>;
+  updateCart: (product: ProductDetail, count: number) => void;
+  pushProductToCart: (product: ProductDetail, count: number) => void;
 }
 
 interface State {
@@ -34,11 +48,11 @@ interface State {
 }
 
 const { width, height } = Dimensions.get("window");
-export default class ProductDetailScreen extends React.Component<Props, State> {
+class ProductDetailScreen extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     let cartNum = 0;
-    SessionStore.cart.carts.forEach(i => {
+    this.props.carts.forEach(i => {
       cartNum += i.count;
     });
     this.state = {
@@ -84,6 +98,10 @@ export default class ProductDetailScreen extends React.Component<Props, State> {
    * render header.
    */
   _renderHeader = () => {
+    let num = 0;
+    this.props.carts.forEach(i => {
+      num += i.count;
+    });
     return (
       <HeaderCart
         leftIcon="chevron-left"
@@ -98,7 +116,7 @@ export default class ProductDetailScreen extends React.Component<Props, State> {
         rootStyle={{
           backgroundColor: SessionStore.bgColor
         }}
-        cartNum={this.state.cartNum}
+        cartNum={num}
       />
     );
   };
@@ -307,44 +325,32 @@ export default class ProductDetailScreen extends React.Component<Props, State> {
 
   async _addToCart() {
     try {
-      // SessionStore.cartNum = SessionStore.cartNum + this.state.productNum;
-      // let product = SessionStore.cart.carts.find(item => {
-      //   return item.product.name == this.state.productDetail.name;
-      // });
-      let isExist = SessionStore.cart.isExist(this.state.productDetail);
-      if (isExist) {
-        SessionStore.cart.carts = SessionStore.cart.carts.map(p => {
-          if (p.product.name == this.state.productDetail.name) {
-            return { ...p, count: p.count + this.state.productNum };
-          }
-          return p;
-        });
+      let cart: Cart = this.props.carts.find(item => {
+        return item.product.name == this.state.productDetail.name;
+      });
+      if (cart) {
+        this.props.updateCart(cart.product, cart.count + this.state.productNum);
       } else {
-        SessionStore.cart.carts.push({
-          product: this.state.productDetail,
-          count: this.state.productNum
-        });
+        this.props.pushProductToCart(
+          this.state.productDetail,
+          this.state.productNum
+        );
       }
+
+      // this.props.setCart(carts);
 
       // luu lai vao database.
       await AsyncStorage.setItem(
         StoreKey.SAVE_CART,
-        JSON.stringify(SessionStore.cart)
+        JSON.stringify(this.props.carts)
       );
-
-      let num = 0;
-      SessionStore.cart.carts.forEach(e => {
-        num += e.count;
-      });
-      this.setState({
-        cartNum: num
-      });
     } catch (error) {
       Alert.alert("", "Lưu thất bại");
     }
   }
 
   render() {
+    
     return (
       <View style={styles.container}>
         {this._renderHeader()}
@@ -360,6 +366,29 @@ export default class ProductDetailScreen extends React.Component<Props, State> {
     );
   }
 }
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setCart: (carts: Array<Cart>) => dispatch(setCart(carts)),
+    updateCart: (product: ProductDetail, count: number) =>
+      dispatch(updateCart(product, count)),
+    pushProductToCart: (product: ProductDetail, count: number) =>
+      dispatch(pushProductToCart(product, count))
+  };
+};
+
+const mapStateToProps = state => {
+  return {
+    cart: state[ReducerConstant.CartReducer].cart,
+    carts: state[ReducerConstant.CartReducer].carts,
+    testNum: state[ReducerConstant.CartReducer].testNum
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ProductDetailScreen);
 
 const styles = StyleSheet.create({
   container: {

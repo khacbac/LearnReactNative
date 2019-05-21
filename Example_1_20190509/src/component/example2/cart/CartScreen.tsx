@@ -16,9 +16,10 @@ import {
   FlatList,
   Image,
   Dimensions,
-  SafeAreaView
+  SafeAreaView,
+  AsyncStorage,
+  Alert
 } from "react-native";
-import Header from "../../../module/ui/Header";
 import colors from "../../../res/colors";
 import images from "../../../res/drawable/images";
 import ProductDetail from "../../../module/model/ProductDetail";
@@ -26,6 +27,12 @@ import HeaderV2 from "../../../module/ui/HeaderV2";
 import HeaderCart from "../../../module/ui/HeaderCart";
 import SessionStore from "../../SessionStore";
 import { BASE_URL } from "../../../module/http/HttpUtils";
+import ReducerConstant from "../redux/reducers/ReducerContant";
+import { setCart, updateCart } from "../redux/actions/CartAction";
+import { connect } from "react-redux";
+import Cart from "../../../module/model/Cart";
+import StoreKey from "../../StoreKey";
+import strings from "../../../res/strings";
 
 enum CartAction {
   None = 0,
@@ -37,29 +44,35 @@ const { width, height } = Dimensions.get("window");
 
 interface Props {
   navigation: any;
+  carts: Array<Cart>;
+  updateCart: (product: ProductDetail, count: number) => void;
 }
 
 interface State {
   actionAction: CartAction;
-  datas: Array<{ product: ProductDetail; count: number }>;
+  // datas: Array<Cart>;
   cartNum: number;
 }
 
-export default class CartScreen extends React.Component<Props, State> {
+class CartScreen extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     let cartNum = 0;
-    SessionStore.cart.carts.forEach(i => {
+    this.props.carts.forEach(i => {
       cartNum += i.count;
     });
     this.state = {
       actionAction: CartAction.PlaceOrder,
-      datas: SessionStore.cart.carts,
+      // datas: this.props.carts,
       cartNum: cartNum
     };
   }
 
   _renderHeader = () => {
+    let num = 0;
+    this.props.carts.forEach(i => {
+      num += i.count;
+    });
     return (
       <HeaderCart
         leftIcon="chevron-left"
@@ -70,7 +83,7 @@ export default class CartScreen extends React.Component<Props, State> {
         rootStyle={{
           backgroundColor: SessionStore.bgColor
         }}
-        cartNum={this.state.cartNum}
+        cartNum={num}
       />
     );
   };
@@ -102,7 +115,7 @@ export default class CartScreen extends React.Component<Props, State> {
         }}
       >
         <Text style={{ color: "gray" }}>
-          <Text style={{ color: "black" }}>{this.state.datas.length} </Text>
+          <Text style={{ color: "black" }}>{this.props.carts.length} </Text>
           items
         </Text>
       </View>
@@ -113,7 +126,7 @@ export default class CartScreen extends React.Component<Props, State> {
     return (
       <View style={{ flex: 1 }}>
         <FlatList
-          data={this.state.datas}
+          data={this.props.carts}
           renderItem={this._renderItem}
           keyExtractor={(item, index) => item.product.name}
         />
@@ -122,8 +135,7 @@ export default class CartScreen extends React.Component<Props, State> {
   };
 
   _renderItem = ({ item, index }) => {
-    console.log("BACHK__renderItem: ", item);
-    let pCart: { product: ProductDetail; count: number } = item;
+    let pCart: Cart = item;
     return (
       <View
         style={{
@@ -238,30 +250,48 @@ export default class CartScreen extends React.Component<Props, State> {
     );
   };
 
-  onPlus(item) {
-    this.setState({
-      datas: this.state.datas.map(i => {
-        if (item.name == i.product.name) {
-          return { ...i, count: i.count + 1 };
-        }
-        return i;
-      })
-    });
+  async onPlus(p: ProductDetail) {
+    try {
+      let cart: Cart = this.props.carts.find(item => {
+        return item.product.name == p.name;
+      });
+      if (cart) {
+        let carts = this.props.carts.map(item => {
+          if (item.product.name == p.name) {
+            return { ...item, count: item.count + 1 };
+          }
+          return item;
+        });
+        await AsyncStorage.setItem(StoreKey.SAVE_CART, JSON.stringify(carts));
+        this.props.updateCart(cart.product, cart.count + 1);
+      }
+    } catch (error) {
+      Alert.alert("", strings.http_error);
+    }
   }
 
-  onSub(item) {
-    this.setState({
-      datas: this.state.datas.map(i => {
-        if (item.name == i.product.name) {
-          return { ...i, count: i.count - 1 };
-        }
-        return i;
-      })
-    });
+  async onSub(p: ProductDetail) {
+    try {
+      let cart: Cart = this.props.carts.find(item => {
+        return item.product.name == p.name;
+      });
+      if (cart) {
+        let carts = this.props.carts.map(item => {
+          if (item.product.name == p.name) {
+            return { ...item, count: item.count - 1 };
+          }
+          return item;
+        });
+        await AsyncStorage.setItem(StoreKey.SAVE_CART, JSON.stringify(carts));
+        this.props.updateCart(cart.product, cart.count - 1);
+      }
+    } catch (error) {
+      Alert.alert("", strings.http_error);
+    }
   }
 
   _renderTotalView = () => {
-    let datas = this.state.datas;
+    let datas = this.props.carts;
     let total = 0;
     let quanlity = 0;
     datas.forEach(item => {
@@ -280,7 +310,7 @@ export default class CartScreen extends React.Component<Props, State> {
       >
         <Text style={{ color: "gray" }}>
           {"Total: "}
-          <Text style={{ color: "black" }}>{`$${total}`}</Text>
+          <Text style={{ color: "black" }}>{`$${total.toFixed(2)}`}</Text>
         </Text>
         <Text style={{ color: "gray", marginLeft: 50, marginRight: 10 }}>
           {"Quanlity: "}
@@ -358,6 +388,25 @@ export default class CartScreen extends React.Component<Props, State> {
     );
   }
 }
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setCart: (carts: Array<Cart>) => dispatch(setCart(carts)),
+    updateCart: (product: ProductDetail, count: number) =>
+      dispatch(updateCart(product, count))
+  };
+};
+
+const mapStateToProps = state => {
+  return {
+    carts: state[ReducerConstant.CartReducer].carts
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(CartScreen);
 
 const styles = StyleSheet.create({
   container: {

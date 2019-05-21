@@ -21,6 +21,10 @@ import ScreenName from "../../ScreenName";
 import SessionStore from "../../SessionStore";
 import HeaderCart from "../../../module/ui/HeaderCart";
 import Product from "../../../module/model/Product";
+import { connect } from "react-redux";
+import ReducerConstant from "../redux/reducers/ReducerContant";
+import ProductDetail from "../../../module/model/ProductDetail";
+import Cart from "../../../module/model/Cart";
 
 const productImages = [
   images.apple,
@@ -37,6 +41,8 @@ const { width, height } = Dimensions.get("window");
 
 interface Props {
   navigation: any;
+  // cart: Cart;
+  carts: Array<Cart>;
 }
 
 interface State {
@@ -45,22 +51,20 @@ interface State {
   cartNum: number;
 }
 
-export default class ProductScreen extends React.Component<Props, State> {
+class ProductScreen extends React.Component<Props, State> {
   category = null;
 
   constructor(props) {
     super(props);
     this.category = this.props.navigation.getParam("CATEGORY");
     let cartNum = 0;
-    console.log("BACHK__ProductScreen: ", SessionStore.cart);
-    SessionStore.cart.carts.forEach(i => {
+    this.props.carts.forEach(i => {
       cartNum += i.count;
     });
     this.state = {
       products: [],
       // status fecth data.
       httpStatus: Status.LOADING,
-      // cartNum: SessionStore.cartNum
       cartNum: cartNum
     };
   }
@@ -72,7 +76,6 @@ export default class ProductScreen extends React.Component<Props, State> {
       // get all product from server.
       let prs = await HttpUtils.requestGet(this.category.category_url);
       if (prs && prs.products) {
-        console.log("BACHK_componentDidMount: ", prs);
         prs.products.forEach(item => {
           item.product_photo =
             productImages[Math.floor(Math.random() * productImages.length)];
@@ -104,6 +107,10 @@ export default class ProductScreen extends React.Component<Props, State> {
    * render header.
    */
   _renderHeader = () => {
+    let num = 0;
+    this.props.carts.forEach(i => {
+      num += i.count;
+    });
     return (
       <HeaderCart
         leftIcon="chevron-left"
@@ -121,7 +128,7 @@ export default class ProductScreen extends React.Component<Props, State> {
         rootStyle={{
           backgroundColor: SessionStore.bgColor
         }}
-        cartNum={this.state.cartNum}
+        cartNum={num}
       />
     );
   };
@@ -214,6 +221,15 @@ export default class ProductScreen extends React.Component<Props, State> {
     );
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    cart: state[ReducerConstant.CartReducer].cart,
+    carts: state[ReducerConstant.CartReducer].carts,
+  };
+};
+
+export default connect(mapStateToProps)(ProductScreen);
 
 const styles = StyleSheet.create({
   container: {

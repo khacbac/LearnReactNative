@@ -1,4 +1,4 @@
-import { Dimensions, Platform } from "react-native";
+import { Dimensions, Platform, ScaledSize } from "react-native";
 
 class Utils {
   static isIphoneX() {
@@ -12,11 +12,11 @@ class Utils {
     );
   }
 
-  static isIPhoneXSize(dim) {
+  static isIPhoneXSize(dim: ScaledSize) {
     return dim.height == 812 || dim.width == 812;
   }
 
-  static isIPhoneXrSize(dim) {
+  static isIPhoneXrSize(dim: ScaledSize) {
     return dim.height == 896 || dim.width == 896;
   }
 }

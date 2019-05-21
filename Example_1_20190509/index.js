@@ -3,7 +3,7 @@
  */
 
 import { AppRegistry, View } from "react-native";
-import React, { Component } from "react-native";
+import React from "react-native";
 // import App from "./App";
 import { name as appName } from "./app.json";
 import Home from "./src/component/example1/shop/Home";
